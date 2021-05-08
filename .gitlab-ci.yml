@@ -3,15 +3,17 @@ services:
   - docker:dind
 
 variables:
-  DOCKER_DRIVER: overlay
-  SPRING_PROFILES_ACTIVE: gitlab-ci
-  USER_GITLAB: sanjaybsm
-  APP_NAME: springbootgitlab
   REPO: springbootlabtest
+  DOCKER_REGISTRY: 270823544663.dkr.ecr.us-east-1.amazonaws.com
+  APP_NAME: springdemo
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 stages:
   - build
   - test
+  - docker
 
 maven-build:
   image: maven:3-jdk-8
@@ -28,3 +30,20 @@ maven-test:
   artifacts:
     paths:
       - target/*.jar
+
+docker-build:
+  stage: docker
+  image: 
+    name: docker:latest
+  services:
+    - docker:19-dind
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - aws --version
+    - docker info
+    - docker --version
+  script:
+    - docker build -t $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID .
+    - docker push $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID
