@@ -12,7 +12,6 @@ variables:
 stages:
   - build
   - test
-  - docker
 
 maven-build:
   image: maven:3-jdk-8
