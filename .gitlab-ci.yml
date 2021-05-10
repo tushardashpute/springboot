@@ -4,16 +4,19 @@ services:
 
 variables:
   REPO: springbootlabtest
-  DOCKER_REGISTRY: 863404411791.dkr.ecr.us-east-1.amazonaws.com
+  DOCKER_REGISTRY: 552166557473.dkr.ecr.us-east-1.amazonaws.com
   APP_NAME: springdemo
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
+  CLUSTER_NAME: eksdemo
+  DEPLOYMENT_NAME: springboot
 
 stages:
   - build
   - test
   - docker
+  - apply
 
 maven-build:
   image: maven:3-jdk-8
@@ -47,3 +50,17 @@ docker-build:
   script:
     - docker build -t $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID .
     - docker push $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID
+
+.kubectl_config: &kubectl_config
+- aws eks --region us-east-1 update-kubeconfig --name eksdemo
+
+docker-apply:
+  stage: apply
+  image: 
+    name: docker.io/sulemanhasib43/eks:latest
+  variables:
+    K8S_NAMESPACE: default
+  before_script: *kubectl_config
+  script:
+    - kubectl version
+    - kubectl -n $K8S_NAMESPACE patch deployment $DEPLOYMENT_NAME -p '{"spec":{"template":{"spec":{"containers":[{"name":"'"$DEPLOYMENT_NAME"'","image":"'"$DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID"'"}]}}}}'
