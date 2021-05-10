@@ -63,4 +63,6 @@ docker-apply:
   before_script: *kubectl_config
   script:
     - kubectl version
-    - kubectl -n $K8S_NAMESPACE patch deployment $DEPLOYMENT_NAME -p '{"spec":{"template":{"spec":{"containers":[{"name":"'"$DEPLOYMENT_NAME"'","image":"'"$DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID"'"}]}}}}'
+    - kubectl apply -f springboot-deployment.yaml
+    - kubectl apply -f springboot-service.yaml
+    - kubectl get all
