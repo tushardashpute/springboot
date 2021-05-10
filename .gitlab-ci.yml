@@ -4,7 +4,7 @@ services:
 
 variables:
   REPO: springbootlabtest
-  DOCKER_REGISTRY: 270823544663.dkr.ecr.us-east-1.amazonaws.com
+  DOCKER_REGISTRY: 863404411791.dkr.ecr.us-east-1.amazonaws.com
   APP_NAME: springdemo
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
