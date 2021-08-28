@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: springboot
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /listallcustomers
+        backend:
+          serviceName: springboot
+          servicePort: 33333
