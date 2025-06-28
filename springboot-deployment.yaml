@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: springboot
-        image: tushardashpute/springboohello:5
+        # image: tushardashpute/springboohello:5
+        image: REPLACE_IMAGE   # 🔁 Placeholder for Jenkins to replace
         imagePullPolicy: Always
         ports:
         - containerPort: 33333
