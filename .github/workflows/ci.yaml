@@ -1,0 +1,48 @@
+name: SpringBoot CI & Deploy on EKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: eks_runner   # The runner label for your ARC-managed runner in EKS
+    env:
+      ECR_REPOSITORY: tushardashpute/springboohello
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+      
+      - name: Push Docker image to ECR
+        run: |
+          docker push $ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Deploy Helm chart to EKS
+        run: |
+          helm upgrade --install springboot ./springboot/ \
+            --set image.repository=$ECR_REPOSITORY \
+            --set image.tag=$IMAGE_TAG \
+            --set serviceAccount=true
+
+      # Optionally, verify deployment
+      - name: Verify deployment
+        run: kubectl rollout status deployment springboot
